@@ -1,27 +1,26 @@
 import React from 'react';
-import uuid from 'uuid';
 
 import NoteActions from '../actions/NoteActions';
+import LaneActions from '../actions/LaneActions';
 import connect from '../libs/connect';
 import Notes from './Notes';
+import LaneHeader from './LaneHeader';
 
-const Lane = ({lane, notes, NoteActions, ...props}) => {
-    const addNote = () => {
-        NoteActions.create({
-            id: uuid.v4(),
-            task: 'New task'
-        });
-    };
-
+const Lane = ({lane, notes, NoteActions, className, ...props}) => {
     const deleteNote = (id, e) => {
         e.stopPropagation();
+
+        LaneActions.detachFromLane({
+            laneId: lane.id,
+            noteId: id
+        });
 
         NoteActions.delete(id);
     };
 
     const activateNoteEdit = (id, e) => {
         e.stopPropagation();
-        
+
         NoteActions.update({id, editing: true});
     };
 
@@ -32,15 +31,10 @@ const Lane = ({lane, notes, NoteActions, ...props}) => {
     };  
  
     return (
-        <div>
-            <div className="lane-header">
-                <div className="lane-add-note">
-                    <button className="add-note" onClick={addNote}>+</button>
-                </div>
-                <div className="lane-name">{lane.name}</div>
-            </div>
+        <div className={className}>
+            <LaneHeader lane={lane} />
             <Notes 
-                notes={notes} 
+                notes={selectNotesByIds(notes, lane.notes)} 
                 onDelete={deleteNote}
                 onNoteClick={activateNoteEdit}
                 onEdit={editNote} />
@@ -48,4 +42,13 @@ const Lane = ({lane, notes, NoteActions, ...props}) => {
     );
 };
 
-export default connect(({notes}) => ({notes}), {NoteActions})(Lane)
+const selectNotesByIds = (allNotes, noteIds = []) => 
+    allNotes.filter(note => noteIds.includes(note.id));
+
+
+export default connect(
+    ({notes}) => ({notes}), 
+    {
+        NoteActions, 
+        LaneActions
+    })(Lane)

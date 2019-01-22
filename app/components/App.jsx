@@ -1,11 +1,13 @@
 import React, { Component } from 'react';
-// import Notes from './Notes';
-// import NoteActions from '../actions/NoteActions';
 import Lanes from './Lanes';
 import LaneActions from '../actions/LaneActions';
+import connect from '../libs/connect';
 
 import uuid from 'uuid';
-import connect from '../libs/connect';
+import {compose} from 'redux';
+import {DragDropContext} from 'react-dnd';
+import HTML5Backend from 'react-dnd-html5-backend';
+
 
 const App = ({LaneActions, lanes}) => {
     const addLane = () => {
@@ -23,6 +25,10 @@ const App = ({LaneActions, lanes}) => {
     );
 }
 
-export default connect(({lanes}) => ({
-    lanes
-}), { LaneActions })(App)
+export default compose(
+    DragDropContext(HTML5Backend),
+    connect(
+      ({lanes}) => ({lanes}),
+      {LaneActions}
+    )
+  )(App)
